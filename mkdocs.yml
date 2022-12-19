@@ -1,0 +1,22 @@
+site_name: AIRRSHIP
+site_url: https://airrship.readthedocs.io/
+nav:
+    - Home: index.md
+    - Quickstart: quickstart.md
+    - Simulation Model: model.md
+    - Commandline Usage: parameters.md
+    - Python: python_use.md
+    - Output Files: output.md
+    - Input Data: data.md
+theme: readthedocs
+
+plugins:
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: false
+            show_root_heading: true
+
+markdown_extensions:
+  - admonition

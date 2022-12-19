@@ -1,0 +1,2 @@
+AIRRSHIP was run with the following arguments: 
+out_name='benchmark_million_1', outdir='.', datadir=None, number_seqs=500000, het=[0.72, 0.16, 0.67], shm=False, shm_flat=False, mut_rate=None, mut_num=None, shm_random=False, all_alleles=False, locus=None, flat_vdj=False, no_trim=False, no_trim_v3=False, no_trim_d3=False, no_trim_d5=False, no_trim_j5=False, no_np=False, no_np1=False, no_np2=False, seed=None

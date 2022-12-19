@@ -1,0 +1,26 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools", "wheel"]
+
+[project]
+name = "airrship"
+version = "0.1.0"
+description = "Simulation of B cell receptor repertoires"
+authors = [{name = "Catherine Sutherland", email = "catherine.sutherland@ed.ac.uk"}]
+readme = "README.md"
+license = {file = "LICENSE"}
+dynamic = ["entry-points"]
+keywords=['bioinformatics', 'sequencing', 'immunology', 'adaptive immunity',
+        'immunoglobulin', 'adaptive immune receptor repertoires','AIRR-seq', 
+        'antibody','repertoire sequencing', 'B cell repertoire']
+classifiers = [
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11"
+]
+requires-python = ">=3.7"
+
+
