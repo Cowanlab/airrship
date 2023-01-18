@@ -1605,7 +1605,7 @@ def mutate_by_kmer_random_region(sequence, v_family, junction_length, kmer_mut_i
     return mut_seq, mutations, mut_rate
 
 
-def mutate_randomly(sequence, mut_per_seq, mut_rate=False, number_muts=False):
+def mutate_randomly(sequence, v_family, mut_per_seq, mut_rate=False, number_muts=False):
     """Adds random hypermutation to a sequence.
 
     Hypermutates sequence randomly without taking into account kmer context of
@@ -1630,7 +1630,9 @@ def mutate_randomly(sequence, mut_per_seq, mut_rate=False, number_muts=False):
 
     if mut_rate == False:
         if number_muts == False:
-            rates, probs = zip(*mut_per_seq.items())
+            mut_dict = mut_per_seq[v_family]
+            rates, probs = zip(*mut_dict.items())
+            mut_rate = choice(rates, probs)
             mut_rate = choice(rates, probs)
             # mut_rate = random.choice(mut_per_seq)
             number_muts = int(round(len(sequence) * mut_rate))
@@ -1725,17 +1727,17 @@ def overarch_mutation(sequence, v_family, junction_length, kmer_mut_info, shm_fl
         elif shm_random == True:
             if mut_num is not None:
                 mutated_seq, mutations, mutation_rate = mutate_randomly(
-                    sequence, mut_per_seq, number_muts=mut_num)
+                    sequence, v_family, mut_per_seq, number_muts=mut_num)
             else:
                 mutated_seq, mutations, mutation_rate = mutate_randomly(
-                    sequence, mut_per_seq, mut_rate=mut_rate)
+                    sequence, v_family, mut_per_seq, mut_rate=mut_rate)
     elif shm_random == True:
         if repeat == False:
             mutated_seq, mutations, mutation_rate = mutate_randomly(
-                sequence, mut_per_seq)
+                sequence, v_family, mut_per_seq)
         else:
             mutated_seq, mutations, mutation_rate = mutate_randomly(
-                sequence, mut_per_seq, mut_rate=mut_rate)
+                sequence, v_family, mut_per_seq, mut_rate=mut_rate)
     else:
         if repeat == False:
             mutated_seq, mutations, mutation_rate = mutate_by_kmer_random_region(

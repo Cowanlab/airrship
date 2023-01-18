@@ -1,0 +1,2 @@
+[console_scripts]
+airrship = airrship.create_repertoire:main

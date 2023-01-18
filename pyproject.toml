@@ -4,7 +4,7 @@ requires = ["setuptools", "wheel"]
 
 [project]
 name = "airrship"
-version = "0.1.0"
+version = "0.1.1"
 description = "Simulation of B cell receptor repertoires"
 authors = [{name = "Catherine Sutherland", email = "catherine.sutherland@ed.ac.uk"}]
 readme = "README.md"
