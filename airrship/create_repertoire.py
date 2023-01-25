@@ -27,6 +27,8 @@ import re
 import argparse
 import sys
 import importlib.resources
+from importlib.metadata import version
+
 
 # Classes
 
@@ -1954,6 +1956,8 @@ def main(args=None):
 
     parser = argparse.ArgumentParser(allow_abbrev=False)
 
+    parser.add_argument('-v', '--version',
+                        action='version', version=version('airrship'))
     parser.add_argument("-o",
                         "--outfname",  # specify prefix to name files
                         action="store",

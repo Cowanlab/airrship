@@ -4,12 +4,11 @@ requires = ["setuptools", "wheel"]
 
 [project]
 name = "airrship"
-version = "0.1.2"
-description = "Simulation of B cell receptor repertoires"
+dynamic = ["version", "entry-points"]
 authors = [{name = "Catherine Sutherland", email = "catherine.sutherland@ed.ac.uk"}]
+description = "Simulation of B cell receptor repertoires"
 readme = "README.md"
 license = {file = "LICENSE"}
-dynamic = ["entry-points"]
 keywords=['bioinformatics', 'sequencing', 'immunology', 'adaptive immunity',
         'immunoglobulin', 'adaptive immune receptor repertoires','AIRR-seq', 
         'antibody','repertoire sequencing', 'B cell repertoire']
@@ -22,5 +21,9 @@ classifiers = [
     "Programming Language :: Python :: 3.11"
 ]
 requires-python = ">=3.7"
+
+[tool.setuptools.dynamic]
+version = {attr = "airrship.__version__"}
+
 
 
