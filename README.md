@@ -16,4 +16,4 @@ Full documentation is available [here](https://airrship.readthedocs.io).
 
 ## Example datasets
 
-Four pre-generated datasets, each with 500,000 sequences, are available in the example_repertoires folder. These were produced using default parameters, two with and two without SHM, and may be used if you do not wish to install and run AIRRSHIP yourself or want to explore the output yourself first.
+Four pre-generated datasets, each with 500,000 sequences, are available at [GitHub](https://github.com/Cowanlab/airrship). These were produced using default parameters, two with and two without SHM, and may be used if you do not wish to install and run AIRRSHIP yourself or want to explore the output yourself first.

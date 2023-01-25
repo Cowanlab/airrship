@@ -105,9 +105,7 @@ class Allele:
                         prob_dict = trim_3_dict[self.family]
                     else:
                         prob_dict = random.choice(list(trim_3_dict.values()))
-                    lengths, probs = zip(*prob_dict.items())
-                    trim_3 = choice(lengths, probs)
-                    # trim_3 = weighted_choice(prob_dict.items())
+                    trim_3 = weighted_choice(prob_dict.items())
                     # prevent entire allele or anchor from being removed
                     this_loop = 0
                     while (trim_3 >= self.length) or (trim_3 >= (self.length - self.anchor - 1)):
@@ -115,7 +113,7 @@ class Allele:
                             print("failed to trim", self.name)
                             break
                         this_loop += 1
-                        trim_3 = choice(lengths, probs)
+                        trim_3 = weighted_choice(prob_dict.items())
 
             elif self.segment == "D":
                 if no_d5 == False:
@@ -124,8 +122,7 @@ class Allele:
                         prob_5_dict = trim_5_dict[self.family]
                     else:
                         prob_5_dict = random.choice(list(trim_5_dict.values()))
-                    lengths_5, probs_5 = zip(*prob_5_dict.items())
-                    trim_5 = choice(lengths_5, probs_5)
+                    trim_5 = weighted_choice(prob_5_dict.items())
 
                 if no_d3 == False:
                     trim_3_dict = trim_dicts["D_3"]
@@ -133,15 +130,14 @@ class Allele:
                         prob_3_dict = trim_3_dict[self.family]
                     else:
                         prob_3_dict = random.choice(list(trim_3_dict.values()))
-                    lengths_3, probs_3 = zip(*prob_3_dict.items())
-                    trim_3 = choice(lengths_3, probs_3)
+                    trim_3 = weighted_choice(prob_3_dict.items())
 
                 while trim_3 + trim_5 >= self.length:
                     if no_d5 == False:
-                        trim_5 = choice(lengths_5, probs_5)
+                        trim_5 = weighted_choice(prob_5_dict.items())
 
                     if no_d3 == False:
-                        trim_3 = choice(lengths_3, probs_3)
+                        trim_3 = weighted_choice(prob_3_dict.items())
 
             elif self.segment == "J":
                 if no_j5 == False:
@@ -150,13 +146,10 @@ class Allele:
                         prob_dict = trim_5_dict[self.family]
                     else:
                         prob_dict = random.choice(list(trim_5_dict.values()))
-                    lengths, probs = zip(*prob_dict.items())
-                    trim_5 = choice(lengths, probs)
-                    # trim_5 = weighted_choice(prob_dict.items())
+                    trim_5 = weighted_choice(prob_dict.items())
 
                     while (trim_5 >= self.length) or (trim_5 >= self.anchor):
-                        trim_5 = choice(lengths, probs)
-                        # trim_5 = weighted_choice(prob_dict.items())
+                        trim_5 = weighted_choice(prob_dict.items())
 
         self.trim_5 = trim_5
         self.trim_3 = trim_3
@@ -337,9 +330,9 @@ class NP_Region:
             base (str): Next base in the NP region sequence.
         """
 
-        base = choice(
-            self.bases, [self.transition_probs[position][current_base][next_base]
-                         for next_base in self.bases])
+        base = weighted_choice(
+            list(zip(self.bases, [self.transition_probs[position][current_base][next_base]
+                                  for next_base in self.bases])))
         return base
 
     def generate_np_seq(self):
@@ -360,23 +353,17 @@ class NP_Region:
 
 # Helper functions
 
-def choice(options, probs):
-    """Choose an element from a list according to a list of corresponding
-    (cumulative) probabilities.
-
-    Args:
-        options (list): List of options to be selected from.
-        probs (list): List of probabilities of each option.
-
-    Returns:
-        List element chosen from options, according to the probabilities given.
+def weighted_choice(choices):
+    """Randomly make a choice from a set of options with relative weights.
     """
-    x, c = random.random(), 0
-    for i, p in enumerate(probs):
-        c += p
-        if x < c:
-            break
-    return options[i]
+
+    total = sum(w for c, w in choices)
+    r = random.uniform(0, total)
+    upto = 0
+    for c, w in choices:
+        if upto + w >= r:
+            return c
+        upto += w
 
 
 def translate(seq):
@@ -1306,8 +1293,7 @@ def random_sequence(locus, gene_use_dict, family_use_dict, segments=["V", "D", "
             counter = 1
             while counter > 0:
                 gene_dict = gene_use_dict[segment]
-                genes, probs = zip(*gene_dict.items())
-                gene = choice(genes, probs)
+                gene = weighted_choice(gene_dict.items())
                 gene_alleles = [
                     x for x in chromosome[segment] if x.gene == gene]
                 if len(gene_alleles) > 0:
@@ -1357,11 +1343,9 @@ def get_NP_regions_markov_pos(NP_lengths, NP_transitions, which_NP, first_base_d
 
     NP_seq = ""
     length_dict = NP_lengths[which_NP]
-    lengths, probs = zip(*length_dict.items())
-    length = choice(lengths, probs)
+    length = weighted_choice(length_dict.items())
     if length != 0:
-        nucs, probs = zip(*first_base_dict[which_NP].items())
-        first_base = choice(nucs, probs)
+        first_base = weighted_choice(first_base_dict[which_NP].items())
         np_region = NP_Region(NP_transitions[which_NP], first_base, length)
         NP_seq = np_region.generate_np_seq()
     return NP_seq
@@ -1486,9 +1470,7 @@ def mutate_by_kmer_random_region(sequence, v_family, junction_length, kmer_mut_i
 
     if mut_rate == None and number_muts == None:
         mut_dict = mut_per_seq[v_family]
-        rates, probs = zip(*mut_dict.items())
-        mut_rate = choice(rates, probs)
-        # mut_rate = random.choice(mut_per_seq)
+        mut_rate = weighted_choice(mut_dict.items())
         number_muts = int(round(len(sequence) * mut_rate))
     elif number_muts == None:
         number_muts = int(round(len(sequence) * mut_rate))
@@ -1562,8 +1544,7 @@ def mutate_by_kmer_random_region(sequence, v_family, junction_length, kmer_mut_i
                         base = kmer[2]
                         final_bases[position] = base.upper()
                         items.remove(item)
-                    nucs, probs = zip(*prob_dict.items())
-                    base = choice(nucs, probs)
+                    base = weighted_choice(prob_dict.items())
                     final_bases[position] = base.lower()
                     if base.lower() != kmer[2]:
                         number_muts -= 1
@@ -1575,8 +1556,7 @@ def mutate_by_kmer_random_region(sequence, v_family, junction_length, kmer_mut_i
                         base = kmer[2]
                         final_bases[position] = base.upper()
                         items.remove(item)
-                    nucs, probs = zip(*prob_dict.items())
-                    base = choice(nucs, probs)
+                    base = weighted_choice(prob_dict.items())
                     final_bases[position] = base.lower()
                     if base.lower() != kmer[2]:
                         number_muts -= 1
@@ -1631,10 +1611,7 @@ def mutate_randomly(sequence, v_family, mut_per_seq, mut_rate=False, number_muts
     if mut_rate == False:
         if number_muts == False:
             mut_dict = mut_per_seq[v_family]
-            rates, probs = zip(*mut_dict.items())
-            mut_rate = choice(rates, probs)
-            mut_rate = choice(rates, probs)
-            # mut_rate = random.choice(mut_per_seq)
+            mut_rate = weighted_choice(mut_dict.items())
             number_muts = int(round(len(sequence) * mut_rate))
     else:
         number_muts = int(round(len(sequence) * mut_rate))
