@@ -8,6 +8,7 @@ nav:
     - Python: python_use.md
     - Output Files: output.md
     - Input Data: data.md
+    - Release Notes: release.md
 theme: readthedocs
 
 plugins:

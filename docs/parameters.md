@@ -2,7 +2,7 @@
 
 
 ```bash
-airrship [-h] -o OUT_NAME [--outdir OUTDIR] [--datadir DATADIR] 
+airrship [-h] [-v] -o OUT_NAME [--outdir OUTDIR] [--datadir DATADIR] 
          [-n NUMBER_SEQS] [--het PROP PROP PROP] [--shm] [--shm_flat] 
          [--mut_rate MUT_RATE | --mut_num MUT_NUM] [--shm_random] 
          [--all_alleles] [--locus LOCUS FILE] 
@@ -10,7 +10,6 @@ airrship [-h] -o OUT_NAME [--outdir OUTDIR] [--datadir DATADIR]
          [--no_trim_v3] [--no_trim_d3] [--no_trim_d5] [--no_trim_j5] 
          [--no_np][--no_np1] [--no_np2] [--seed SEED]
 ```
-
 
 ## Parameters
 
