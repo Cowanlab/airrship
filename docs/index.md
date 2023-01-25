@@ -11,6 +11,10 @@ AIRRSHIP replicates the VDJ recombination process from locus creation through to
 
 **Above:** AIRRSHIP simulates human heavy chain BCR sequences, closely replicating experimental data at each step of the synthetic recombination process. Key parameters such as VDJ usage, gene trimming, junctional insertions and somatic hypermutation can all be modified by the user. The FASTA output can then analysed using tools of interest and results easily compared to the tab separated values (TSV) file which acts as a record of the recombination process for each sequence.
 
+## Publications
+
+A preprint giving details of AIRRSHIP is currently available on [bioRxiv](https://www.biorxiv.org/content/10.1101/2022.12.20.521228v1).
+
 ## Table of Contents
 
 1. [Home](index.md)

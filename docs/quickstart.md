@@ -23,8 +23,7 @@ AIRRSHIP intentionally uses only Python standard libraries and requires only the
 
 ## Examples
 
-A small number of example repertoires are hosted at the AIRRSHIP [GitHub repository](https://github.com/Cowanlab/airrship). There are two repertoires with mutation and two without, each with 500,000 sequences, and all AIRRSHIP output files are provided. These may be used instead of running AIRRSHIP directly or if you wish to explore the output before installation.
-
+A very small example repertoire is held at the AIRRSHIP [GitHub repository](https://github.com/Cowanlab/airrship) to provide an example of the expected output. Larger example repertoire files are available at https://zenodo.org/record/7568252#.Y9FfKRPP2BQ.
 
 ## Running from the command line <a name="command line"></a>
 

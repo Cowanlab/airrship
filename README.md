@@ -16,4 +16,8 @@ Full documentation is available [here](https://airrship.readthedocs.io).
 
 ## Example datasets
 
-Four pre-generated datasets, each with 500,000 sequences, are available at [GitHub](https://github.com/Cowanlab/airrship). These were produced using default parameters, two with and two without SHM, and may be used if you do not wish to install and run AIRRSHIP yourself or want to explore the output yourself first.
+If you do not wish to install and run AIRRSHIP yourself or want to explore the output yourself first, a small example repertoire is hosted at the AIRRSHIP [GitHub repository](https://github.com/Cowanlab/airrship). Larger repertoire files are available at https://zenodo.org/record/7568252#.Y9FfKRPP2BQ.
+
+## Publications
+
+A preprint is currently available at https://doi.org/10.1101/2022.12.20.521228.
