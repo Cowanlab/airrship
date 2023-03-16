@@ -1,5 +1,6 @@
 site_name: AIRRSHIP
 site_url: https://airrship.readthedocs.io/
+repo_url: https://github.com/Cowanlab/airrship
 nav:
     - Home: index.md
     - Quickstart: quickstart.md
@@ -11,13 +12,21 @@ nav:
     - Release Notes: release.md
 theme: readthedocs
 
+markdown_extensions:
+  - admonition
+
 plugins:
+  - search
   - mkdocstrings:
       handlers:
         python:
           options:
             show_source: false
-            show_root_heading: true
-
-markdown_extensions:
-  - admonition
+            show_root_heading: false
+            show_root_toc_entry: false
+  - print-site:
+      add_to_navigation: true
+      print_page_title: 'Print Docs'
+      add_print_site_banner: true
+      print_site_banner_template: docs/assets/print_banner.tpl
+      add_table_of_contents: false
