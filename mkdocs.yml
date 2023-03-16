@@ -1,6 +1,7 @@
 site_name: AIRRSHIP
 site_url: https://airrship.readthedocs.io/
-repo_url: https://github.com/Cowanlab/airrship
+repo_url: https://github.com/Cowanlab/airrship/
+edit_uri: tree/main/docs
 nav:
     - Home: index.md
     - Quickstart: quickstart.md
