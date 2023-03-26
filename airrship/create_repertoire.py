@@ -1757,7 +1757,7 @@ def gap_seq(gapped_seq, mutated_seq):
 # Sequence generation
 
 
-def generate_sequence(locus, data_dict, mutate=False, flat_usage=False, no_trim_list=(False, False, False, False, False), no_np_list=(False, False, False), shm_flat=False, shm_random=False, mutation_rate=None, mutation_number=None):
+def generate_sequence(locus, data_dict, mutate=False, flat_usage=False, no_trim_list=(False, False, False, False, False), no_np_list=(False, False, False), shm_flat=False, shm_random=False, mutation_rate=None, mutation_number=None,only_functional = True):
     """Wrapper to bring together entire sequence generation process.
 
     Recombines, trims and mutates. Will only produce functional sequences 
@@ -1803,21 +1803,33 @@ def generate_sequence(locus, data_dict, mutate=False, flat_usage=False, no_trim_
 
     functional = False
     if mutate == True:
-        while functional == False:
-            sequence = random_sequence(
-                locus, gene_use_dict, family_use_dict, ["V", "D", "J"], flat_usage)
-            attempts = 0
+        if only_functional:
             while functional == False:
-                attempts += 1
-                if attempts > 40:
-                    break
-                sequence.gapped_seq = sequence.get_nuc_seq(no_trim_list,
-                                                           trim_dicts,
-                                                           no_np_list,
-                                                           NP_lengths,
-                                                           NP_transitions,
-                                                           NP_first_bases,
-                                                           gapped=True)
+                sequence = random_sequence(
+                    locus, gene_use_dict, family_use_dict, ["V", "D", "J"], flat_usage)
+                attempts = 0
+                while functional == False:
+                    attempts += 1
+                    if attempts > 40:
+                        break
+                    sequence.gapped_seq = sequence.get_nuc_seq(no_trim_list,
+                                                               trim_dicts,
+                                                               no_np_list,
+                                                               NP_lengths,
+                                                               NP_transitions,
+                                                               NP_first_bases,
+                                                               gapped=True)
+           else:
+            sequence = random_sequence(
+                    locus, gene_use_dict, family_use_dict, ["V", "D", "J"], flat_usage)
+            sequence.gapped_seq = sequence.get_nuc_seq(no_trim_list,
+                                                               trim_dicts,
+                                                               no_np_list,
+                                                               NP_lengths,
+                                                               NP_transitions,
+                                                               NP_first_bases,
+                                                               gapped=True)
+            
                 sequence.ungapped_seq = sequence.gapped_seq.replace(".", "")
                 sequence.junction_length = sequence.get_junction_length()
                 this_loop = 0
