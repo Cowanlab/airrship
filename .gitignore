@@ -3,3 +3,4 @@ dist/
 *.egg.info
 *.egg*
 .DS_Store
+test_output/
