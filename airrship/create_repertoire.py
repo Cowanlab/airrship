@@ -188,6 +188,11 @@ class Sequence:
         mutations (str): Mutation events.
         mut_count (int): Mutation count.
         mut_freq (int): Mutation frequency.
+        functional (bool): Sequence is functional.
+        stop (bool): Presence/absence of stop codon.
+        anchors (bool): Presence/absence correct junction anchors.
+        inframe (bool): VJ is in-frame.
+
     """
 
     def __init__(self, v_allele, d_allele, j_allele):
@@ -221,6 +226,10 @@ class Sequence:
         self.mutated_seq = None
         self.gapped_seq = ""
         self.gapped_mutated_seq = None
+        self.stop = True
+        self.anchors = False
+        self.inframe = False
+        self.productive = False
 
     def get_nuc_seq(self, no_trim_list, trim_dicts, no_np_list, NP_lengths, NP_transitions, NP_first_bases, gapped=False):
         """Creates the recombined nucleotide sequence with trimming and np addition.
@@ -469,7 +478,7 @@ def float_range(min, max):
             raise argparse.ArgumentTypeError("Expect a float value")
         if f < min or f > max:
             raise argparse.ArgumentTypeError(
-                f"Must be in range {str(min)} -  {str(max)}. Mutation rates above {str(max)} are unachievable.")
+                f"Must be in range {str(min)} -  {str(max)}.")
         return f
 
     return check_float_range
@@ -1757,7 +1766,7 @@ def gap_seq(gapped_seq, mutated_seq):
 # Sequence generation
 
 
-def generate_sequence(locus, data_dict, mutate=False, flat_usage=False, no_trim_list=(False, False, False, False, False), no_np_list=(False, False, False), shm_flat=False, shm_random=False, mutation_rate=None, mutation_number=None):
+def generate_sequence(locus, data_dict, mutate=False, flat_usage=False, no_trim_list=(False, False, False, False, False), no_np_list=(False, False, False), shm_flat=False, shm_random=False, mutation_rate=None, mutation_number=None, non_functional=False):
     """Wrapper to bring together entire sequence generation process.
 
     Recombines, trims and mutates. Will only produce functional sequences 
@@ -1786,6 +1795,8 @@ def generate_sequence(locus, data_dict, mutate=False, flat_usage=False, no_trim_
             from distribution. Defaults to None.
         mutation_number (int, optional): Number of mutations to be added rather than
             choosing from distribution. Defaults to None.
+        non_functional (bool, optional): Return non-functional sequences. 
+            Defaults to False.
 
     Returns:
         sequence (Sequence): Final recombined sequence, with trimming, 
@@ -1801,24 +1812,24 @@ def generate_sequence(locus, data_dict, mutate=False, flat_usage=False, no_trim_
     kmer_dicts = data_dict["kmer_dicts"]
     mut_rate_per_seq = data_dict["mut_rate_per_seq"]
 
-    functional = False
     if mutate == True:
-        while functional == False:
+        if non_functional == False:
             sequence = random_sequence(
                 locus, gene_use_dict, family_use_dict, ["V", "D", "J"], flat_usage)
             attempts = 0
-            while functional == False:
+            while sequence.productive == False:
                 attempts += 1
                 if attempts > 40:
                     break
                 sequence.gapped_seq = sequence.get_nuc_seq(no_trim_list,
-                                                           trim_dicts,
-                                                           no_np_list,
-                                                           NP_lengths,
-                                                           NP_transitions,
-                                                           NP_first_bases,
-                                                           gapped=True)
-                sequence.ungapped_seq = sequence.gapped_seq.replace(".", "")
+                                                            trim_dicts,
+                                                            no_np_list,
+                                                            NP_lengths,
+                                                            NP_transitions,
+                                                            NP_first_bases,
+                                                            gapped=True)
+                sequence.ungapped_seq = sequence.gapped_seq.replace(
+                    ".", "")
                 sequence.junction_length = sequence.get_junction_length()
                 this_loop = 0
                 while (sequence.junction_length % 3) != 0 or check_stops(sequence.ungapped_seq) == True:
@@ -1828,12 +1839,12 @@ def generate_sequence(locus, data_dict, mutate=False, flat_usage=False, no_trim_
                             f"couldn't make productive (before mutation): {sequence.v_allele.name}, {sequence.d_allele.name}, {sequence.j_allele.name}")
                         break
                     sequence.gapped_seq = sequence.get_nuc_seq(no_trim_list,
-                                                               trim_dicts,
-                                                               no_np_list,
-                                                               NP_lengths,
-                                                               NP_transitions,
-                                                               NP_first_bases,
-                                                               gapped=True)
+                                                                trim_dicts,
+                                                                no_np_list,
+                                                                NP_lengths,
+                                                                NP_transitions,
+                                                                NP_first_bases,
+                                                                gapped=True)
                     sequence.ungapped_seq = sequence.gapped_seq.replace(
                         ".", "")
                     sequence.junction_length = sequence.get_junction_length()
@@ -1855,9 +1866,9 @@ def generate_sequence(locus, data_dict, mutate=False, flat_usage=False, no_trim_
                         sequence.gapped_seq, sequence.v_allele.family, sequence.junction_length, kmer_dicts, shm_flat, shm_random, mut_rate_per_seq, mut_rate=mutation_rate, mut_num=mutation_number, repeat=True)
 
                 sequence.junction = sequence.mutated_seq[sequence.v_allele.anchor:
-                                                         sequence.v_allele.anchor + sequence.junction_length].upper()
+                                                            sequence.v_allele.anchor + sequence.junction_length].upper()
 
-                if (sequence.junction_length % 3) == 0 and check_stops(sequence.ungapped_seq) == False:
+                if (sequence.junction_length % 3) == 0 and check_stops(sequence.mutated_seq) == False:
                     sequence.junction_aa = translate(sequence.junction)
                     if sequence.junction_aa.startswith("C") and (sequence.junction_aa.endswith("F") or sequence.junction_aa.endswith("W")):
                         sequence.ungapped_seq = sequence.ungapped_seq.upper()
@@ -1874,7 +1885,7 @@ def generate_sequence(locus, data_dict, mutate=False, flat_usage=False, no_trim_
                             sequence.j_allele.trim_5 - 1
                         sequence.v_seq = sequence.mutated_seq[:sequence.v_seq_end]
                         sequence.d_seq = sequence.mutated_seq[sequence.d_seq_start -
-                                                              1:sequence.d_seq_end]
+                                                                1:sequence.d_seq_end]
                         sequence.j_seq = sequence.mutated_seq[sequence.j_seq_start - 1:]
 
                         sequence.gapped_mutated_seq = gap_seq(
@@ -1884,25 +1895,85 @@ def generate_sequence(locus, data_dict, mutate=False, flat_usage=False, no_trim_
                         sequence.mut_freq = sequence.mut_count / \
                             len(sequence.mutated_seq)
 
-                        functional = True
+                        sequence.productive = True
                         return sequence
-
-    if mutate == False:
-        while functional == False:
+        else:
             sequence = random_sequence(
                 locus, gene_use_dict, family_use_dict, ["V", "D", "J"], flat_usage)
             attempts = 0
-            while functional == False:
+
+            sequence.gapped_seq = sequence.get_nuc_seq(no_trim_list,
+                                                       trim_dicts,
+                                                       no_np_list,
+                                                       NP_lengths,
+                                                       NP_transitions,
+                                                       NP_first_bases,
+                                                       gapped=True)
+            sequence.ungapped_seq = sequence.gapped_seq.replace(".", "")
+            sequence.junction_length = sequence.get_junction_length()
+
+            sequence.mutations = ""
+
+            sequence.mutated_seq, sequence.mutations, mutation_rate = overarch_mutation(
+                sequence.gapped_seq, sequence.v_allele.family, sequence.junction_length, kmer_dicts, shm_flat, shm_random, mut_rate_per_seq, mut_rate=mutation_rate, mut_num=mutation_number)
+
+            sequence.junction = sequence.mutated_seq[sequence.v_allele.anchor:
+                                                     sequence.v_allele.anchor + sequence.junction_length].upper()
+
+            sequence.junction_aa = translate(sequence.junction)
+
+            if (sequence.junction_length % 3) == 0:
+                sequence.inframe = True
+            if check_stops(sequence.mutated_seq) == False:
+                sequence.stop = False
+            if sequence.junction_aa.startswith("C") and (sequence.junction_aa.endswith("F") or sequence.junction_aa.endswith("W")):
+                sequence.anchors = True
+
+            if sequence.inframe == True and sequence.stop == False and sequence.anchors == True:
+                sequence.productive = True
+
+            sequence.ungapped_seq = sequence.ungapped_seq.upper()
+            sequence.mutated_seq = sequence.mutated_seq.upper()
+            sequence.gapped_seq = sequence.gapped_seq.upper()
+
+            sequence.v_seq_start = 1
+            sequence.v_seq_end = sequence.v_allele.ungapped_len - sequence.v_allele.trim_3
+            sequence.d_seq_start = sequence.v_seq_end + sequence.NP1_length + 1
+            sequence.d_seq_end = sequence.d_seq_start + sequence.d_allele.ungapped_len - \
+                sequence.d_allele.trim_3 - sequence.d_allele.trim_5 - 1
+            sequence.j_seq_start = sequence.d_seq_end + sequence.NP2_length + 1
+            sequence.j_seq_end = sequence.j_seq_start + sequence.j_allele.ungapped_len - \
+                sequence.j_allele.trim_5 - 1
+            sequence.v_seq = sequence.mutated_seq[:sequence.v_seq_end]
+            sequence.d_seq = sequence.mutated_seq[sequence.d_seq_start -
+                                                  1:sequence.d_seq_end]
+            sequence.j_seq = sequence.mutated_seq[sequence.j_seq_start - 1:]
+
+            sequence.gapped_mutated_seq = gap_seq(
+                sequence.gapped_seq, sequence.mutated_seq).upper()
+
+            sequence.mut_count = len(sequence.mutations)
+            sequence.mut_freq = sequence.mut_count / \
+                len(sequence.mutated_seq)
+
+            return sequence
+
+    if mutate == False:
+        if non_functional == False:
+            sequence = random_sequence(
+                locus, gene_use_dict, family_use_dict, ["V", "D", "J"], flat_usage)
+            attempts = 0
+            while sequence.productive == False:
                 attempts += 1
                 if attempts > 40:
                     break
                 sequence.gapped_seq = sequence.get_nuc_seq(no_trim_list,
-                                                           trim_dicts,
-                                                           no_np_list,
-                                                           NP_lengths,
-                                                           NP_transitions,
-                                                           NP_first_bases,
-                                                           gapped=True)
+                                                            trim_dicts,
+                                                            no_np_list,
+                                                            NP_lengths,
+                                                            NP_transitions,
+                                                            NP_first_bases,
+                                                            gapped=True)
                 sequence.ungapped_seq = sequence.gapped_seq.replace(
                     ".", "").upper()
                 sequence.junction_length = sequence.get_junction_length()
@@ -1915,18 +1986,18 @@ def generate_sequence(locus, data_dict, mutate=False, flat_usage=False, no_trim_
                             f"couldn't make productive: {sequence.v_allele.name}, {sequence.d_allele.name}, {sequence.j_allele.name}")
                         break
                     sequence.gapped_seq = sequence.get_nuc_seq(no_trim_list,
-                                                               trim_dicts,
-                                                               no_np_list,
-                                                               NP_lengths,
-                                                               NP_transitions,
-                                                               NP_first_bases,
-                                                               gapped=True)
+                                                                trim_dicts,
+                                                                no_np_list,
+                                                                NP_lengths,
+                                                                NP_transitions,
+                                                                NP_first_bases,
+                                                                gapped=True)
                     sequence.ungapped_seq = sequence.gapped_seq.replace(
                         ".", "").upper()
                     sequence.junction_length = sequence.get_junction_length()
 
                 sequence.junction = sequence.ungapped_seq[sequence.v_allele.anchor:
-                                                          sequence.v_allele.anchor + sequence.junction_length].upper()
+                                                            sequence.v_allele.anchor + sequence.junction_length].upper()
 
                 if (sequence.junction_length % 3) == 0 and check_stops(sequence.ungapped_seq) == False:
                     sequence.junction_aa = translate(sequence.junction)
@@ -1943,11 +2014,58 @@ def generate_sequence(locus, data_dict, mutate=False, flat_usage=False, no_trim_
                         sequence.v_seq = sequence.ungapped_seq[:sequence.v_seq_end].upper(
                         )
                         sequence.d_seq = sequence.ungapped_seq[sequence.d_seq_start -
-                                                               1:sequence.d_seq_end].upper()
+                                                                1:sequence.d_seq_end].upper()
                         sequence.j_seq = sequence.ungapped_seq[sequence.j_seq_start - 1:].upper(
                         )
-                        functional = True
+                        sequence.productive = True
                         return sequence
+
+        else:
+            sequence = random_sequence(
+                locus, gene_use_dict, family_use_dict, ["V", "D", "J"], flat_usage)
+
+            sequence.gapped_seq = sequence.get_nuc_seq(no_trim_list,
+                                                       trim_dicts,
+                                                       no_np_list,
+                                                       NP_lengths,
+                                                       NP_transitions,
+                                                       NP_first_bases,
+                                                       gapped=True)
+            sequence.ungapped_seq = sequence.gapped_seq.replace(
+                ".", "").upper()
+            sequence.junction_length = sequence.get_junction_length()
+
+            sequence.junction = sequence.ungapped_seq[sequence.v_allele.anchor:
+                                                      sequence.v_allele.anchor + sequence.junction_length].upper()
+            sequence.junction_aa = translate(sequence.junction)
+
+            if (sequence.junction_length % 3) == 0:
+                sequence.inframe = True
+            if check_stops(sequence.ungapped_seq) == False:
+                sequence.stop = False
+            if sequence.junction_aa.startswith("C") and (sequence.junction_aa.endswith("F") or sequence.junction_aa.endswith("W")):
+                sequence.anchors = True
+
+            if sequence.inframe == True and sequence.stop == False and sequence.anchors == True:
+                sequence.productive = True
+
+            sequence.gapped_seq = sequence.gapped_seq.upper()
+            sequence.v_seq_start = 1
+            sequence.v_seq_end = sequence.v_allele.ungapped_len - sequence.v_allele.trim_3
+            sequence.d_seq_start = sequence.v_seq_end + sequence.NP1_length + 1
+            sequence.d_seq_end = sequence.d_seq_start + sequence.d_allele.ungapped_len - \
+                sequence.d_allele.trim_3 - sequence.d_allele.trim_5 - 1
+            sequence.j_seq_start = sequence.d_seq_end + sequence.NP2_length + 1
+            sequence.j_seq_end = sequence.j_seq_start + sequence.j_allele.ungapped_len - \
+                sequence.j_allele.trim_5 - 1
+            sequence.v_seq = sequence.ungapped_seq[:sequence.v_seq_end].upper(
+            )
+            sequence.d_seq = sequence.ungapped_seq[sequence.d_seq_start -
+                                                   1:sequence.d_seq_end].upper()
+            sequence.j_seq = sequence.ungapped_seq[sequence.j_seq_start - 1:].upper(
+            )
+
+            return sequence
 
 
 def main(args=None):
@@ -1956,8 +2074,8 @@ def main(args=None):
 
     parser = argparse.ArgumentParser(allow_abbrev=False)
 
-    parser.add_argument('-v', '--version',
-                        action='version', version=version('airrship'))
+    # parser.add_argument('-v', '--version',
+    #                     action='version', version=version('airrship'))
     parser.add_argument("-o",
                         "--outfname",  # specify prefix to name files
                         action="store",
@@ -1991,19 +2109,19 @@ def main(args=None):
                         help="Apply somatic hypermutation.")
     parser.add_argument("--shm_flat",
                         action="store_true",
-                        help="Use the same mutation rate for each sequence (specify using --mut_rate or --mut_num). Default is mutation rate of 0.05 for all sequences.")
+                        help="Apply somatic hypermutation. Use the same mutation rate for each sequence (specify using --mut_rate or --mut_num). Default is mutation rate of 0.05 for all sequences.")
     group = parser.add_mutually_exclusive_group(required=False)
     group.add_argument("--mut_rate",
                        action="store",
                        type=float_range(0, 0.5),
-                       help="Mutation frequency for flat SHM. Value between 0 and 0.5. Cannot use with --mut_num. No default.")
+                       help="Mutation frequency for flat SHM only. Value between 0 and 0.5. Cannot use with --mut_num. No default.")
     group.add_argument("--mut_num",
                        action="store",
                        type=int_range(0, 180),
-                       help="Number of mutations for flat SHM. Integer between 0 and 180. Cannot use with --mut_rate. No default.")
+                       help="Number of mutations for flat SHM only. Integer between 0 and 180. Cannot use with --mut_rate. No default.")
     parser.add_argument("--shm_random",
                         action="store_true",
-                        help="Do not mutate according to 5mer context. Choose position to mutate and resulting base randomly.")
+                        help="Apply somatic hypermutation. Do not mutate according to 5mer context. Choose position to mutate and resulting base randomly.")
     parser.add_argument("--all_alleles",  # Use the haplotype method unless "-all_alleles" is specified
                         action="store_true",
                         help="Use all available alleles from all available genes, i.e. do not generate a 'haplotype'.")
@@ -2040,11 +2158,28 @@ def main(args=None):
     parser.add_argument("--no_np2",
                         action="store_true",  # NP regions are generate unless otherwise specified
                         help="Don't insert nucleotides at DJ junctions, i.e. do not create NP2 regions. ")
+    parser.add_argument("--non_productive",
+                        # Non-functional sequences are normally discarded.
+                        action="store_true",
+                        help="Include all non-productive sequences produced in output.")
+    parser.add_argument("--prop_non_productive",
+                        action = "store",
+                        type=float_range(0,1.0),
+                        help="Specify a proportion of sequences to be non_productive. Used with --non_productive.")
     parser.add_argument("--seed",
                         type=int,
                         help="Set random seed.")
 
+
     args = parser.parse_args(args)
+
+    if args.shm_flat == False and (args.mut_num is not None or args.mut_rate is not None):
+        parser.error("--mut_num and --mut_rate only apply when --shm_flat is used.")
+    
+    if args.prop_non_productive is not None and (args.non_productive == False):
+        parser.error("Can only specificy --prop_non_productive when --non_productive is used.")
+
+
 
     # Print copyright notice
 
@@ -2130,11 +2265,14 @@ def main(args=None):
                 writer.writerow(
                     ["sequence_id"]
                     + ["sequence"]
+                    + ["productive"]
                     + ["v_call"]
                     + ["d_call"]
                     + ["j_call"]
                     + ["junction"]
                     + ["junction_aa"]
+                    + ["stop_codon"]
+                    + ["vj_in_frame"]
                     + ["junction_length"]
                     + ["np1_length"]
                     + ["np1"]
@@ -2164,10 +2302,27 @@ def main(args=None):
                 # GENERATE REPERTOIRE
 
                 counter = 0
-
+                prod_counter = 0
+                non_prod_counter = 0
+                
                 while counter < args.number_seqs:
-                    sequence = generate_sequence(locus, data_dict, mutate, args.flat_vdj, no_trim_args,
-                                                 no_np_args, args.shm_flat, args.shm_random, mutation_rate, mutation_number)
+                    if args.prop_non_productive is not None:
+                        number_non_prod = round(args.prop_non_productive * args.number_seqs)
+                        number_prod = args.number_seqs - number_non_prod
+                        if non_prod_counter < number_non_prod:
+                            sequence = generate_sequence(locus, data_dict, mutate, args.flat_vdj, no_trim_args,
+                                                        no_np_args, args.shm_flat, args.shm_random, mutation_rate, mutation_number, args.non_productive)
+                            while prod_counter == number_prod and sequence.productive == True:
+                                sequence = generate_sequence(locus, data_dict, mutate, args.flat_vdj, no_trim_args,
+                                                        no_np_args, args.shm_flat, args.shm_random, mutation_rate, mutation_number, args.non_productive)
+                        else:
+                            sequence = generate_sequence(locus, data_dict, mutate, args.flat_vdj, no_trim_args,
+                                                        no_np_args, args.shm_flat, args.shm_random, mutation_rate, mutation_number, False)
+                            
+                    else:
+                        sequence = generate_sequence(locus, data_dict, mutate, args.flat_vdj, no_trim_args,
+                                                        no_np_args, args.shm_flat, args.shm_random, mutation_rate, mutation_number, args.non_productive)
+
                     mutations_write = []
                     for x in sorted(sequence.mutations.items()):
                         mutations_write.append(f"{x[0]}:{x[1]}")
@@ -2177,11 +2332,14 @@ def main(args=None):
                     row = (
                         [counter]
                         + [sequence.mutated_seq]
+                        + [str(sequence.productive)[:1]]
                         + [sequence.v_allele.name]
                         + [sequence.d_allele.name]
                         + [sequence.j_allele.name]
                         + [sequence.junction]
                         + [sequence.junction_aa]
+                        + [str(sequence.stop)[:1]]
+                        + [str(sequence.inframe)[:1]]
                         + [sequence.junction_length]
                         + [sequence.NP1_length]
                         + [sequence.NP1_region]
@@ -2209,6 +2367,10 @@ def main(args=None):
                     )
                     writer.writerow(row)
                     counter += 1
+                    if sequence.productive == True:
+                        prod_counter += 1
+                    if sequence.productive == False:
+                        non_prod_counter += 1
                     if counter % 1000 == 0:
                         print(counter)
 
@@ -2217,11 +2379,14 @@ def main(args=None):
                 writer.writerow(
                     ["sequence_id"]
                     + ["sequence"]
+                    + ["productive"]
                     + ["v_call"]
                     + ["d_call"]
                     + ["j_call"]
                     + ["junction"]
                     + ["junction_aa"]
+                    + ["stop_codon"]
+                    + ["vj_in_frame"]
                     + ["junction_length"]
                     + ["np1_length"]
                     + ["np1"]
@@ -2245,20 +2410,41 @@ def main(args=None):
 
                 # GENERATE REPERTOIRE
                 counter = 0
-                non_productive = 0
+                prod_counter = 0
+                non_prod_counter = 0
+
                 while counter < args.number_seqs:
-                    sequence = generate_sequence(locus, data_dict, mutate, args.flat_vdj, no_trim_args,
-                                                 no_np_args, args.shm_flat, args.shm_random, mutation_rate, mutation_number)
+                    if args.prop_non_productive is not None:
+                        number_non_prod = round(args.prop_non_productive * args.number_seqs)
+                        number_prod = args.number_seqs - number_non_prod
+                        if non_prod_counter < number_non_prod:
+                            sequence = generate_sequence(locus, data_dict, mutate, args.flat_vdj, no_trim_args,
+                                                        no_np_args, args.shm_flat, args.shm_random, mutation_rate, mutation_number, args.non_productive)
+                            while prod_counter == number_prod and sequence.productive == True:
+                                sequence = generate_sequence(locus, data_dict, mutate, args.flat_vdj, no_trim_args,
+                                                        no_np_args, args.shm_flat, args.shm_random, mutation_rate, mutation_number, args.non_productive)
+                        else:
+                            sequence = generate_sequence(locus, data_dict, mutate, args.flat_vdj, no_trim_args,
+                                                        no_np_args, args.shm_flat, args.shm_random, mutation_rate, mutation_number, False)
+                            
+                    else:
+                        sequence = generate_sequence(locus, data_dict, mutate, args.flat_vdj, no_trim_args,
+                                                        no_np_args, args.shm_flat, args.shm_random, mutation_rate, mutation_number, args.non_productive)
+
+                    
                     fasta.write(f">{counter}" + "\n")
                     fasta.write(sequence.ungapped_seq + "\n")
                     row = (
                         [counter]
                         + [sequence.ungapped_seq]
+                        + [str(sequence.productive)[:1]]
                         + [sequence.v_allele.name]
                         + [sequence.d_allele.name]
                         + [sequence.j_allele.name]
                         + [sequence.junction]
                         + [sequence.junction_aa]
+                        + [str(sequence.stop)[:1]]
+                        + [str(sequence.inframe)[:1]]
                         + [sequence.junction_length]
                         + [sequence.NP1_length]
                         + [sequence.NP1_region]
@@ -2281,10 +2467,15 @@ def main(args=None):
                     )
                     writer.writerow(row)
                     counter += 1
+                    if sequence.productive == True:
+                        prod_counter += 1
+                    if sequence.productive == False:
+                        non_prod_counter += 1
                     if counter % 1000 == 0:
                         print(counter)
 
     end_time = time.time()
+    print(f"{counter} sequences simulated. {prod_counter} productive sequences, {non_prod_counter} non-productive sequences.")
     print("Elapsed time was %g seconds" % (end_time - start_time))
     print(f'Output FASTA: {out_fasta}')
 
