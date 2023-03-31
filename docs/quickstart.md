@@ -23,7 +23,7 @@ AIRRSHIP intentionally uses only Python standard libraries and requires only the
 
 ## Examples
 
-A very small example repertoire is held at the AIRRSHIP [GitHub repository](https://github.com/Cowanlab/airrship) to provide an example of the expected output. Larger example repertoire files are available at https://zenodo.org/record/7568252#.Y9FfKRPP2BQ.
+A very small example repertoire is held at the AIRRSHIP [GitHub repository](https://github.com/Cowanlab/airrship) to provide an example of the expected output. Larger example repertoire files are available at [Zenodo](https://doi.org/10.5281/zenodo.7568251).
 
 ## Running from the command line <a name="command line"></a>
 
@@ -55,6 +55,7 @@ For example, we could create a repertoire with:
 * balanced usage of the gene families
 * no trimming of the 5' end of the D gene
 * no insertion of nucleotides between the D and J gene (no NP2 regions)
+* include non-productive sequences in output and limit them to 10% of the repertoire
 
 ```bash
 airrship -o complex_repertoire \
@@ -62,7 +63,9 @@ airrship -o complex_repertoire \
                      --het 0 0 0 \
                      --flat_vdj family \
                      --no_trim_d5 \
-                     --no_np2
+                     --no_np2 \
+                     --non_productive \
+                     --prop_non_productive 0.1
 ```
 
 Full details can be found in [Command line Usage](parameters.md).
@@ -79,6 +82,12 @@ The ```--shm``` flag will generate SHM according to observed distributions (see 
 
 ```bash
 airrship -o shm_repertoire --shm
+```
+
+Mutation rates can be controlled by passing a multiplication factor with  ```--shm_multiplier```. For example, the below command will create a repertoire with sequences mutated to rates half that as specified in the reference files.
+
+```bash
+airrship -o shm_repertoire --shm --shm_multiplier 0.5
 ```
 
 To request a constant mutation frequency across all sequences, the ```--shm_flat ``` option can be used. The desired mutation rate or number can be specified with either ```--mut_rate``` or ```mut_num```.

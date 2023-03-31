@@ -16,8 +16,9 @@ Bug fix: the --shm_random option no longer produces an error.
 
 ## v0.1.2
 
-Tweaks to ensure that proportionial VDJ usage is accurately recreated from reference files.
+Tweaks to ensure that proportional VDJ usage is accurately recreated from reference files.
 
 ## v0.1.3
 
 Added option for including non-productive sequences in output.
+Added ability 

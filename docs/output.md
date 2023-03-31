@@ -13,7 +13,7 @@ these will be the mutated sequences. The FASTA headers correspond to the sequenc
 
 **outname.tsv**
 
-A tab-delimited file containing information about each sequence and its formation. The file format follows the AIRR-C Rearrangement Schema (add link) where possible. 
+A tab-delimited file containing information about each sequence and its formation. The file format follows the [AIRR-C Rearrangement Schema](https://docs.airr-community.org/en/stable/datarep/rearrangements.html) where possible. 
 
 The below columns are present regardless of simulation criteria:
 
@@ -21,6 +21,9 @@ The below columns are present regardless of simulation criteria:
 | :--------------- | :------------------------------------------------------------------------------ |
 | sequence_id      | Unique sequence identifier.                                                     |
 | sequence         | Final simulated nucleotide sequence.                                            |
+| productive       | True if sequence is predicted to be productive.                                 |
+| stop_codon       | True if the sequence contains a stop codon.                                     |
+| vj_in_frame      | True if the V and J segments are in frame.
 | v_call           | V gene with allele.                                                             |
 | d_call           | D gene with allele.                                                             |
 | j_call           | J gene with allele.                                                             |

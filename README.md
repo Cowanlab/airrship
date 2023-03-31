@@ -16,7 +16,7 @@ Full documentation is available [here](https://airrship.readthedocs.io).
 
 ## Example datasets
 
-If you do not wish to install and run AIRRSHIP yourself or want to explore the output yourself first, a small example repertoire is hosted at the AIRRSHIP [GitHub repository](https://github.com/Cowanlab/airrship). Larger repertoire files are available at https://zenodo.org/record/7568252#.Y9FfKRPP2BQ.
+If you do not wish to install and run AIRRSHIP yourself or want to explore the output yourself first, a small example repertoire is hosted at the AIRRSHIP [GitHub repository](https://github.com/Cowanlab/airrship). Larger example repertoire files are available at [Zenodo](https://doi.org/10.5281/zenodo.7568251).
 
 ## Publications
 
