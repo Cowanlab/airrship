@@ -8,8 +8,8 @@ airrship [-h] [-v] -o OUT_NAME [--outdir OUTDIR] [--datadir DATADIR]
          [--all_alleles] [--locus LOCUS FILE] 
          [--flat_vdj {gene,family,False}] [--no_trim] 
          [--no_trim_v3] [--no_trim_d3] [--no_trim_d5] [--no_trim_j5] 
-         [--no_np][--no_np1] [--no_np2] [--seed SEED] [--non_productive]
-         [--prop_non_productive PROP]
+         [--no_np][--no_np1] [--no_np2] [--non_productive]
+         [--prop_non_productive PROP] [--seed SEED] 
 ```
 
 ## Parameters
