@@ -21,4 +21,4 @@ Tweaks to ensure that proportional VDJ usage is accurately recreated from refere
 ## v0.1.3
 
 Added option for including non-productive sequences in output.
-Added ability 
+Added --shm_multiplier option to control mutation rates. 
