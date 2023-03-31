@@ -1334,7 +1334,7 @@ def random_sequence(locus, gene_use_dict, family_use_dict, segments=["V", "D", "
 
 
 def get_NP_regions_markov_pos(NP_lengths, NP_transitions, which_NP, first_base_dict):
-    """Creates a NP region using a first order markov chain in which the 
+    """Creates a NP region using a first order markov process in which the 
     transition matrix is chosen based on the current position in the NP region.
 
     Args:
@@ -1446,7 +1446,7 @@ def get_gapped_trimmed_seq(allele, no_trim_list, trim_dicts):
     return trimmed_seq
 
 
-def mutate_by_kmer_random_region(sequence, v_family, junction_length, kmer_mut_info, mut_per_seq, mut_rate=None, number_muts=None):
+def mutate_by_kmer_random_region(sequence, v_family, junction_length, kmer_mut_info, mut_per_seq,mut_multiplier, mut_rate=None, number_muts=None):
     """Adds hypermutation to a sequence.
 
     Hypermutates sequence based on proportion of mutation at central position
@@ -1461,10 +1461,13 @@ def mutate_by_kmer_random_region(sequence, v_family, junction_length, kmer_mut_i
             FWR and CDR measures. {region: {kmer: {A : Proportion, T : Proportion,
             C : Proportion, G : Proportion }, ...}, ...}
         mut_per_seq (dict): Mutation frequencies and probabilities for their use.
+        mut_multiplier (float): Multiplier to be used on mutation rates
+            pulled from distribution.
         mut_rate (float, optional): Mutation rate to be used rather than choosing
             from distribution. Defaults to None.
         number_muts (int, optional): Number of mutations to be added rather than
             choosing from distribution. Defaults to None.
+
 
     Returns:
         mut_seq (str): Mutated sequence. Ungapped, all uppercase.
@@ -1482,6 +1485,8 @@ def mutate_by_kmer_random_region(sequence, v_family, junction_length, kmer_mut_i
     if mut_rate == None and number_muts == None:
         mut_dict = mut_per_seq[v_family]
         mut_rate = weighted_choice(mut_dict.items())
+        if mut_rate != 0:
+            mut_rate = mut_rate * mut_multiplier
         number_muts = int(round(len(sequence) * mut_rate))
     elif number_muts == None:
         number_muts = int(round(len(sequence) * mut_rate))
@@ -1596,7 +1601,7 @@ def mutate_by_kmer_random_region(sequence, v_family, junction_length, kmer_mut_i
     return mut_seq, mutations, mut_rate
 
 
-def mutate_randomly(sequence, v_family, mut_per_seq, mut_rate=False, number_muts=False):
+def mutate_randomly(sequence, v_family, mut_per_seq, mut_multiplier, mut_rate=False, number_muts=False):
     """Adds random hypermutation to a sequence.
 
     Hypermutates sequence randomly without taking into account kmer context of
@@ -1606,10 +1611,13 @@ def mutate_randomly(sequence, v_family, mut_per_seq, mut_rate=False, number_muts
         sequence (str): Sequence to be mutated. Expect gapped, lowercase str
             with NP regions in uppercase.
         mut_per_seq (dict): Mutation frequencies and probabilities for their use.
+        mut_multiplier (float): Multiplier to be used on mutation rates
+            pulled from distribution.
         mut_rate (float, optional): Mutation rate to be used rather than choosing
             from distribution. Defaults to None.
         number_muts (int, optional): Number of mutations to be added rather than
             choosing from distribution. Defaults to None.
+
 
     Returns:
         mut_seq (str): Mutated sequence. Ungapped, all uppercase.
@@ -1623,6 +1631,8 @@ def mutate_randomly(sequence, v_family, mut_per_seq, mut_rate=False, number_muts
         if number_muts == False:
             mut_dict = mut_per_seq[v_family]
             mut_rate = weighted_choice(mut_dict.items())
+            if mut_rate != 0:
+                mut_rate = mut_rate * mut_multiplier 
             number_muts = int(round(len(sequence) * mut_rate))
     else:
         number_muts = int(round(len(sequence) * mut_rate))
@@ -1676,7 +1686,7 @@ def mutate_randomly(sequence, v_family, mut_per_seq, mut_rate=False, number_muts
     return mut_seq, mutations, mut_rate
 
 
-def overarch_mutation(sequence, v_family, junction_length, kmer_mut_info, shm_flat, shm_random, mut_per_seq, mut_rate=None, mut_num=None, repeat=False):
+def overarch_mutation(sequence, v_family, junction_length, kmer_mut_info, shm_flat, shm_random, mut_per_seq, mut_rate=None, mut_num=None, mut_multiplier=1, repeat=False):
     """Wrapper function for mutating sequences.
 
     Args:
@@ -1694,6 +1704,8 @@ def overarch_mutation(sequence, v_family, junction_length, kmer_mut_info, shm_fl
             from distribution. Defaults to None.        
         mut_num (int, optional): Number of mutations to be added rather than
             choosing from distribution. Defaults to None.
+        mut_multiplier (float, optional): Multiplier to be used on mutation rates
+            pulled from distribution.
         repeat (bool, optional): True if a repeated attempt at SHM after 
             previous failed to generate productive sequence (ensures preservation 
             of mutation rate). Defaults to False.
@@ -1715,24 +1727,24 @@ def overarch_mutation(sequence, v_family, junction_length, kmer_mut_info, shm_fl
         elif shm_random == True:
             if mut_num is not None:
                 mutated_seq, mutations, mutation_rate = mutate_randomly(
-                    sequence, v_family, mut_per_seq, number_muts=mut_num)
+                    sequence, v_family, mut_per_seq, mut_multiplier, number_muts=mut_num)
             else:
                 mutated_seq, mutations, mutation_rate = mutate_randomly(
-                    sequence, v_family, mut_per_seq, mut_rate=mut_rate)
+                    sequence, v_family, mut_per_seq,mut_multiplier, mut_rate=mut_rate)
     elif shm_random == True:
         if repeat == False:
             mutated_seq, mutations, mutation_rate = mutate_randomly(
-                sequence, v_family, mut_per_seq)
+                sequence, v_family, mut_per_seq,mut_multiplier)
         else:
             mutated_seq, mutations, mutation_rate = mutate_randomly(
-                sequence, v_family, mut_per_seq, mut_rate=mut_rate)
+                sequence, v_family, mut_per_seq,mut_multiplier, mut_rate=mut_rate)
     else:
         if repeat == False:
             mutated_seq, mutations, mutation_rate = mutate_by_kmer_random_region(
-                sequence, v_family, junction_length, kmer_mut_info, mut_per_seq)
+                sequence, v_family, junction_length, kmer_mut_info, mut_per_seq,mut_multiplier)
         else:
             mutated_seq, mutations, mutation_rate = mutate_by_kmer_random_region(
-                sequence, v_family, junction_length, kmer_mut_info, mut_per_seq, mut_rate=mut_rate)
+                sequence, v_family, junction_length, kmer_mut_info, mut_per_seq,mut_multiplier, mut_rate=mut_rate)
 
     return mutated_seq, mutations, mutation_rate
 
@@ -1766,12 +1778,12 @@ def gap_seq(gapped_seq, mutated_seq):
 # Sequence generation
 
 
-def generate_sequence(locus, data_dict, mutate=False, flat_usage=False, no_trim_list=(False, False, False, False, False), no_np_list=(False, False, False), shm_flat=False, shm_random=False, mutation_rate=None, mutation_number=None, non_functional=False):
+def generate_sequence(locus, data_dict, mutate=False, flat_usage=False, no_trim_list=(False, False, False, False, False), no_np_list=(False, False, False), shm_flat=False, shm_random=False, mutation_rate=None, mutation_number=None, mut_multiplier=1, non_functional=False):
     """Wrapper to bring together entire sequence generation process.
 
-    Recombines, trims and mutates. Will only produce functional sequences 
+    Recombines, trims and mutates. Optional produces functional sequences 
     (sequences with an in-frame V and J gene, no stop codons and the expected 
-    junction anchor residues). 
+    junction anchor residues) or non-functional sequences.
 
     Args:
         locus (list): List of two dictionaries. Each is a dictionary containing 
@@ -1795,6 +1807,8 @@ def generate_sequence(locus, data_dict, mutate=False, flat_usage=False, no_trim_
             from distribution. Defaults to None.
         mutation_number (int, optional): Number of mutations to be added rather than
             choosing from distribution. Defaults to None.
+        mut_multiplier (float, optional): Multiplier to be used on mutation rates
+            pulled from distribution.
         non_functional (bool, optional): Return non-functional sequences. 
             Defaults to False.
 
@@ -1852,7 +1866,7 @@ def generate_sequence(locus, data_dict, mutate=False, flat_usage=False, no_trim_
                 sequence.mutations = ""
 
                 sequence.mutated_seq, sequence.mutations, mutation_rate = overarch_mutation(
-                    sequence.gapped_seq, sequence.v_allele.family, sequence.junction_length, kmer_dicts, shm_flat, shm_random, mut_rate_per_seq, mut_rate=mutation_rate, mut_num=mutation_number)
+                    sequence.gapped_seq, sequence.v_allele.family, sequence.junction_length, kmer_dicts, shm_flat, shm_random, mut_rate_per_seq, mutation_rate, mutation_number, mut_multiplier)
 
                 this_loop = 0
                 while check_stops(sequence.mutated_seq) == True:
@@ -1863,7 +1877,7 @@ def generate_sequence(locus, data_dict, mutate=False, flat_usage=False, no_trim_
                         break
 
                     sequence.mutated_seq, sequence.mutations, mutation_rate = overarch_mutation(
-                        sequence.gapped_seq, sequence.v_allele.family, sequence.junction_length, kmer_dicts, shm_flat, shm_random, mut_rate_per_seq, mut_rate=mutation_rate, mut_num=mutation_number, repeat=True)
+                        sequence.gapped_seq, sequence.v_allele.family, sequence.junction_length, kmer_dicts, shm_flat, shm_random, mut_rate_per_seq,mutation_rate, mutation_number,mut_multiplier, repeat=True)
 
                 sequence.junction = sequence.mutated_seq[sequence.v_allele.anchor:
                                                             sequence.v_allele.anchor + sequence.junction_length].upper()
@@ -1915,7 +1929,7 @@ def generate_sequence(locus, data_dict, mutate=False, flat_usage=False, no_trim_
             sequence.mutations = ""
 
             sequence.mutated_seq, sequence.mutations, mutation_rate = overarch_mutation(
-                sequence.gapped_seq, sequence.v_allele.family, sequence.junction_length, kmer_dicts, shm_flat, shm_random, mut_rate_per_seq, mut_rate=mutation_rate, mut_num=mutation_number)
+                sequence.gapped_seq, sequence.v_allele.family, sequence.junction_length, kmer_dicts, shm_flat, shm_random, mut_rate_per_seq, mutation_rate, mutation_number,mut_multiplier)
 
             sequence.junction = sequence.mutated_seq[sequence.v_allele.anchor:
                                                      sequence.v_allele.anchor + sequence.junction_length].upper()
@@ -2074,8 +2088,8 @@ def main(args=None):
 
     parser = argparse.ArgumentParser(allow_abbrev=False)
 
-    # parser.add_argument('-v', '--version',
-    #                     action='version', version=version('airrship'))
+    parser.add_argument('-v', '--version',
+                        action='version', version=version('airrship'))
     parser.add_argument("-o",
                         "--outfname",  # specify prefix to name files
                         action="store",
@@ -2107,6 +2121,10 @@ def main(args=None):
     parser.add_argument("--shm",
                         action="store_true",  # SHM is false unless "-shm" is specified
                         help="Apply somatic hypermutation.")
+    parser.add_argument("--shm_multiplier",
+                        action="store",
+                        type=float_range(0,5.0),
+                        help="Apply a multiplication factor to mutation rate distribution. Value between 0 and 5. Use with --shm or --shm_random, not compatible with --shm_flat.")
     parser.add_argument("--shm_flat",
                         action="store_true",
                         help="Apply somatic hypermutation. Use the same mutation rate for each sequence (specify using --mut_rate or --mut_num). Default is mutation rate of 0.05 for all sequences.")
@@ -2164,6 +2182,7 @@ def main(args=None):
                         help="Include all non-productive sequences produced in output.")
     parser.add_argument("--prop_non_productive",
                         action = "store",
+                        metavar="PROP",
                         type=float_range(0,1.0),
                         help="Specify a proportion of sequences to be non_productive. Used with --non_productive.")
     parser.add_argument("--seed",
@@ -2175,9 +2194,16 @@ def main(args=None):
 
     if args.shm_flat == False and (args.mut_num is not None or args.mut_rate is not None):
         parser.error("--mut_num and --mut_rate only apply when --shm_flat is used.")
+
+    if args.shm_multiplier is not None and (args.shm_random == False and args.shm == False):
+        parser.error("--shm_multiplier can only be specified with --shm or --shm_random.")
+
+    if args.shm_multiplier is not None and args.shm_flat == True:
+        parser.error("--shm_multiplier cannot be used with --shm_flat.")
     
     if args.prop_non_productive is not None and (args.non_productive == False):
         parser.error("Can only specificy --prop_non_productive when --non_productive is used.")
+
 
 
 
@@ -2225,16 +2251,25 @@ def main(args=None):
             mutation_number = args.mut_num
             if args.mut_num > 70:
                 print(
-                    "Warning: High mutation number specified. Performance will be slow and may fail to generate sequences.")
+                    "Warning: High mutation number specified. Performance will be slow and additional warnings may be shown.")
         else:
             if args.mut_rate != None:
                 mutation_rate = args.mut_rate
                 if args.mut_rate > 0.2:
                     print(
-                        "Warning: High mutation rate specified. Performance will be slow and may fail to generate sequences.")
+                        "Warning: High mutation rate specified. Performance will be slow, additional warnings may be shown and may fail to generate sequences.")
 
             else:
                 mutation_rate = 0.05
+
+    if args.shm_multiplier:
+        shm_multiplier = args.shm_multiplier
+        if args.shm_multiplier >= 3:
+            print(
+                "Warning: Large mutation rate multiplier specified. Performance will be slow, additional warnings may be shown and may fail to generate sequences.")
+    else:
+        shm_multiplier = 1
+
 
     # Read in all the reference data
 
@@ -2266,13 +2301,13 @@ def main(args=None):
                     ["sequence_id"]
                     + ["sequence"]
                     + ["productive"]
+                    + ["stop_codon"]
+                    + ["vj_in_frame"]
                     + ["v_call"]
                     + ["d_call"]
                     + ["j_call"]
                     + ["junction"]
                     + ["junction_aa"]
-                    + ["stop_codon"]
-                    + ["vj_in_frame"]
                     + ["junction_length"]
                     + ["np1_length"]
                     + ["np1"]
@@ -2311,17 +2346,17 @@ def main(args=None):
                         number_prod = args.number_seqs - number_non_prod
                         if non_prod_counter < number_non_prod:
                             sequence = generate_sequence(locus, data_dict, mutate, args.flat_vdj, no_trim_args,
-                                                        no_np_args, args.shm_flat, args.shm_random, mutation_rate, mutation_number, args.non_productive)
+                                                        no_np_args, args.shm_flat, args.shm_random, mutation_rate, mutation_number, shm_multiplier, args.non_productive)
                             while prod_counter == number_prod and sequence.productive == True:
                                 sequence = generate_sequence(locus, data_dict, mutate, args.flat_vdj, no_trim_args,
-                                                        no_np_args, args.shm_flat, args.shm_random, mutation_rate, mutation_number, args.non_productive)
+                                                        no_np_args, args.shm_flat, args.shm_random, mutation_rate, mutation_number, shm_multiplier, args.non_productive)
                         else:
                             sequence = generate_sequence(locus, data_dict, mutate, args.flat_vdj, no_trim_args,
-                                                        no_np_args, args.shm_flat, args.shm_random, mutation_rate, mutation_number, False)
+                                                        no_np_args, args.shm_flat, args.shm_random, mutation_rate, mutation_number,shm_multiplier, False)
                             
                     else:
                         sequence = generate_sequence(locus, data_dict, mutate, args.flat_vdj, no_trim_args,
-                                                        no_np_args, args.shm_flat, args.shm_random, mutation_rate, mutation_number, args.non_productive)
+                                                        no_np_args, args.shm_flat, args.shm_random, mutation_rate, mutation_number, shm_multiplier,args.non_productive)
 
                     mutations_write = []
                     for x in sorted(sequence.mutations.items()):
@@ -2333,13 +2368,13 @@ def main(args=None):
                         [counter]
                         + [sequence.mutated_seq]
                         + [str(sequence.productive)[:1]]
+                        + [str(sequence.stop)[:1]]
+                        + [str(sequence.inframe)[:1]]
                         + [sequence.v_allele.name]
                         + [sequence.d_allele.name]
                         + [sequence.j_allele.name]
                         + [sequence.junction]
                         + [sequence.junction_aa]
-                        + [str(sequence.stop)[:1]]
-                        + [str(sequence.inframe)[:1]]
                         + [sequence.junction_length]
                         + [sequence.NP1_length]
                         + [sequence.NP1_region]
@@ -2380,13 +2415,13 @@ def main(args=None):
                     ["sequence_id"]
                     + ["sequence"]
                     + ["productive"]
+                    + ["stop_codon"]
+                    + ["vj_in_frame"]
                     + ["v_call"]
                     + ["d_call"]
                     + ["j_call"]
                     + ["junction"]
                     + ["junction_aa"]
-                    + ["stop_codon"]
-                    + ["vj_in_frame"]
                     + ["junction_length"]
                     + ["np1_length"]
                     + ["np1"]
@@ -2419,17 +2454,17 @@ def main(args=None):
                         number_prod = args.number_seqs - number_non_prod
                         if non_prod_counter < number_non_prod:
                             sequence = generate_sequence(locus, data_dict, mutate, args.flat_vdj, no_trim_args,
-                                                        no_np_args, args.shm_flat, args.shm_random, mutation_rate, mutation_number, args.non_productive)
+                                                        no_np_args, args.shm_flat, args.shm_random, mutation_rate, mutation_number,shm_multiplier, args.non_productive)
                             while prod_counter == number_prod and sequence.productive == True:
                                 sequence = generate_sequence(locus, data_dict, mutate, args.flat_vdj, no_trim_args,
-                                                        no_np_args, args.shm_flat, args.shm_random, mutation_rate, mutation_number, args.non_productive)
+                                                        no_np_args, args.shm_flat, args.shm_random, mutation_rate, mutation_number,shm_multiplier, args.non_productive)
                         else:
                             sequence = generate_sequence(locus, data_dict, mutate, args.flat_vdj, no_trim_args,
-                                                        no_np_args, args.shm_flat, args.shm_random, mutation_rate, mutation_number, False)
+                                                        no_np_args, args.shm_flat, args.shm_random, mutation_rate, mutation_number,shm_multiplier, False)
                             
                     else:
                         sequence = generate_sequence(locus, data_dict, mutate, args.flat_vdj, no_trim_args,
-                                                        no_np_args, args.shm_flat, args.shm_random, mutation_rate, mutation_number, args.non_productive)
+                                                        no_np_args, args.shm_flat, args.shm_random, mutation_rate, mutation_number,shm_multiplier, args.non_productive)
 
                     
                     fasta.write(f">{counter}" + "\n")
@@ -2438,13 +2473,13 @@ def main(args=None):
                         [counter]
                         + [sequence.ungapped_seq]
                         + [str(sequence.productive)[:1]]
+                        + [str(sequence.stop)[:1]]
+                        + [str(sequence.inframe)[:1]]
                         + [sequence.v_allele.name]
                         + [sequence.d_allele.name]
                         + [sequence.j_allele.name]
                         + [sequence.junction]
                         + [sequence.junction_aa]
-                        + [str(sequence.stop)[:1]]
-                        + [str(sequence.inframe)[:1]]
                         + [sequence.junction_length]
                         + [sequence.NP1_length]
                         + [sequence.NP1_region]
