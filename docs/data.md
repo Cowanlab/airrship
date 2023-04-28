@@ -11,7 +11,7 @@ Each reference file requires that certain AIRR-C format columns are present - to
 
 These scripts apply very limited pre-processing to the provided sequences to allow for flexibility and will only drop sequences that contain missing values for required columns. The user may wish to filter to only productive sequences in advance. Some scripts allow the specification of a group column. In these cases this column will be used to group sequences by each unique level of this column and the resulting metrics will be averaged. Otherwise metrics are calculated from the provided file as a whole, treating every sequence equally.
 
-Details of the input files and the scripts that can be used to process them are included below.
+Details of the input files and the scripts that can be used to process them are included below. These scripts do require the installation of pandas (tested with v1.3.5)
 
 ## IMGT alleles
 
