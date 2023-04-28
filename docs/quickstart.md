@@ -51,7 +51,7 @@ By default, AIRRSHIP attempts to replicate real experimental repertoires as clos
 For example, we could create a repertoire with:
 
 * 16,000 sequences 
-* a locus where every gene is homozygous (only one allele present per gene)
+* a locus where as many genes as possible are heterozygous (can't achieve it for every position as not all genes have two alleles)
 * balanced usage of the gene families
 * no trimming of the 5' end of the D gene
 * no insertion of nucleotides between the D and J gene (no NP2 regions)
@@ -60,7 +60,7 @@ For example, we could create a repertoire with:
 ```bash
 airrship -o complex_repertoire \
                      -n 16000 \
-                     --het 0 0 0 \
+                     --het 1 1 1 \
                      --flat_vdj family \
                      --no_trim_d5 \
                      --no_np2 \

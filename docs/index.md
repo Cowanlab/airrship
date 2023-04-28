@@ -43,4 +43,5 @@ A preprint giving details of AIRRSHIP is currently available on [bioRxiv](https:
     4. [NP additions](data.md#np-additions)
     5. [Somatic hypermutation](data.md#somatic-hypermutation)
     6. [Experimental references](data.md#experimental-data-used)
-8. [Release notes](release.md)
+8. [Non-human Species](non_human.md)
+9. [Release notes](release.md)

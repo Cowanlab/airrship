@@ -3,6 +3,16 @@
 AIRRSHIP uses various input data in order to accurately replicate real repertoires. 
 If desired, an alternative data directory can be specified. Files in this directory must follow the format of the included data, including exactly matching headers and column order, and be named in the same manner.
 
+## Scripts for producing input files
+
+A selection of scripts are in included in the scripts folder on Github and can be used to process AIRR TSV files into the required formats for AIRRSHIP input.
+
+Each reference file requires that certain AIRR-C format columns are present - to produce all reference files, the following columns must be included in your input: sequence,sequence_alignment, germline_alignment, fwr1, fwr2, fwr3, cdr1, cdr2, cdr3, v_call, d_call, j_call, np1_length, np2_length, v_sequence_end, d_sequence_start, j_sequence_start. You must also provide paths to IMGT V and D allele FASTA files when calculating trimming metrics. Help for each script can be accessed using create_[]_files.py -h.
+
+These scripts apply very limited pre-processing to the provided sequences to allow for flexibility and will only drop sequences that contain missing values for required columns. The user may wish to filter to only productive sequences in advance. Some scripts allow the specification of a group column. In these cases this column will be used to group sequences by each unique level of this column and the resulting metrics will be averaged. Otherwise metrics are calculated from the provided file as a whole, treating every sequence equally.
+
+Details of the input files and the scripts that can be used to process them are included below.
+
 ## IMGT alleles
 
 Germline VDJ alleles in FASTA format with IMGT headers. Only alleles that are marked as F (functional) or ORF (open reading frame) will be used for sequence generation:
@@ -11,7 +21,9 @@ Germline VDJ alleles in FASTA format with IMGT headers. Only alleles that are ma
 * IMGT_human_IGHD.fasta
 * IMGT_human_IGHJ.fasta
 
-AIRRSHIP includes the IMGT dataset as of 18.02.2022. If an updated dataset is used, or the user wishes to use an alternate database, all other files must contain information to support all the genes present in the new dataset (i.e. if IMGT adds new genes or gene families, and you try to substitute in these files, AIRRSHIP may fail as the currently included distributions do not account for them).
+AIRRSHIP includes the IMGT dataset as of 18.02.2022. If an updated dataset is used, or the user wishes to use an alternate database, all other files must contain information to support all the genes present in the new dataset (i.e. if IMGT adds new genes or gene families, and you try to substitute in these files, AIRRSHIP may fail as the currently included distributions do not account for them). AIRRSHIP currently only supports alleles with names in the IMGT format,
+
+See Non-human Species for allele files for information on simulating sequences from species other than humans.
 
 !!! note
     To avoid confusion when benchmarking alignments, AIRRSHIP ignores the IMGT allele IGHV3-30-3\*03 as it has the same sequence as allele IGHV3-30\*04. AIRRSHIP will also not utilise V or J alleles that do not have the expected junctional anchors.
@@ -35,6 +47,19 @@ VDJ gene and family usage, giving the proportion of sequences to include each ge
 | IGHV1/OR15 | 0.000783292 |
 | ...        | ...         |
 
+
+#### Scripts:
+
+```bash
+create_vdj_files.py  [-h] -i INPUT_FILE [--group GROUP]
+
+-i INPUT_FILE, --input_file INPUT_FILE
+--group GROUP   Name of column containing dataset metadata to group by.
+```
+
+Required columns: v_call, d_call, j_call
+
+
 ## Trimming
 
 Distributions of number of nucleotides to be removed from gene ends at the junctions, per gene family:
@@ -51,6 +76,18 @@ Distributions of number of nucleotides to be removed from gene ends at the junct
 | IGHV1    | 0        | 0.406392257 |
 | IGHV1    | 1        | 0.290851348 |
 |  ...     | ...      | ...         |
+
+#### Scripts:
+
+```bash
+create_trimming_files.py [-h] -i INPUT_FILE [--imgt_v IMGT_V] [--imgt_d IMGT_D] 
+
+-i INPUT_FILE, --input_file INPUT_FILE
+--imgt_v IMGT_V Path to IMGT V allele file.
+--imgt_d IMGT_D Path to IMGT D allele file.
+```
+
+Required columns:  v_call, d_call, v_germline_end, j_germline_start, d_germline_start, d_sequence_end and d_sequence_start.
 
 ## NP additions
 
@@ -96,6 +133,37 @@ Transition probabilities for each position in NP region (i.e. the likelihood of 
 | 0      | A    | 0.24858057  | 0.238914924 | 0.34526599  | 0.167238516 |
 | ...    | ...  | ...         | ...         | ...         | ...         |
 
+#### Scripts:
+
+```bash
+create_np_lengths_files.py [-h] -i INPUT_FILE [--group GROUP]  
+
+-i INPUT_FILE, --input_file INPUT_FILE
+
+--group GROUP   Name of column containing dataset metadata to group by.
+```
+
+Required columns: np1_length, np2_length
+
+```bash
+create_np_first_bases.py [-h] -i INPUT_FILE
+
+-i INPUT_FILE, --input_file INPUT_FILE
+```
+
+Required columns: np1_length,np2_length,sequence,v_sequence_end,d_sequence_start and j_sequence_start
+
+```bash
+create_np_transitions_files.py [-h] -i INPUT_FILE
+
+-i INPUT_FILE, --input_file INPUT_FILE
+```
+
+Required columns: np1_length,np2_length,sequence,v_sequence_end,d_sequence_start and j_sequence_start
+
+When producing NP transition matrices, only a single file for each region is produced. AIRRSHIP requires two, np[1|2]_transition_probs_per_position_igdm.csv and np[1|2]_transition_probs_per_position_igag.csv to account for differences in inserted nucleotides following SHM. Therefore this script must be run once on unmutated sequences and once on mutated sequences and the files manually renamed. If required, the same file with different names can be used although this may affect insertion accuracy.
+
+
 ## Somatic Hypermutation
 
 Rates of mutation frequency per sequence, per V family:
@@ -132,6 +200,15 @@ Per base mutation rates for the centre base of each unique 5mer (the likelihood 
 | GCACA | 0.847932735 | 0.043780581 | 0.074638153 | 0.033648531 |
 | ...   | ...         | ...         | ...         | ...         |
 
+#### Scripts:
+
+```bash
+create_shm_files.py [-h] -i INPUT_FILE
+
+-i INPUT_FILE, --input_file INPUT_FILE
+```
+
+Required columns: v_call, germline_alignment, sequence_alignment, fwr1, fwr2, fwr3, cdr1, cdr2, cdr3
 
 ## Experimental data used
 

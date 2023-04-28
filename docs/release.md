@@ -16,9 +16,15 @@ Bug fix: the --shm_random option no longer produces an error.
 
 ## v0.1.2
 
-Tweaks to ensure that proportional VDJ usage is accurately recreated from reference files.
+Adjustments to ensure that proportional VDJ usage is accurately recreated from reference files.
 
 ## v0.1.3
 
 Added option for including non-productive sequences in output.
 Added --shm_multiplier option to control mutation rates. 
+
+## v0.1.4
+
+Included --species option to make simulating non-human species using user specified data easier. 
+!!! warning
+    Default values for --het have changed to 0 0 0. This differs from previous releases where the default behaviour was to use the greatest proportion of heterozygous positions possible in the inbuilt data.
