@@ -4,3 +4,5 @@ dist/
 *.egg*
 .DS_Store
 test_output/
+old_dist/
+*.json
