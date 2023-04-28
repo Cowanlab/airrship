@@ -10,6 +10,7 @@ nav:
     - Python: python_use.md
     - Output Files: output.md
     - Input Data: data.md
+    - Non-human Species: non_human.md
     - Release Notes: release.md
 theme: readthedocs
 
