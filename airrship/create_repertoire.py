@@ -30,6 +30,7 @@ import importlib.resources
 from importlib.metadata import version
 
 
+
 # Classes
 
 
@@ -341,9 +342,17 @@ class NP_Region:
             base (str): Next base in the NP region sequence.
         """
 
-        base = weighted_choice(
-            list(zip(self.bases, [self.transition_probs[position][current_base][next_base]
-                                  for next_base in self.bases])))
+        if position in self.transition_probs:
+
+            if current_base in self.transition_probs[position]:
+                base = weighted_choice(
+                    list(zip(self.bases, [self.transition_probs[position][current_base][next_base]
+                                        for next_base in self.bases])))
+            else:
+                base = random.choice(["A","C","G","T"])
+        else:
+            base = random.choice(["A","C","G","T"])
+
         return base
 
     def generate_np_seq(self):
@@ -1218,7 +1227,7 @@ def write_summary_file(out_name, args):
         f.write(str(output))
 
 
-def get_genotype(data_folder=None, het_list=[1, 1, 1], haplotype=True, locus=None):
+def get_genotype(data_folder=None, het_list=[1, 1, 1], haplotype=True, locus=None,species="human"):
     """Wrapper that generates a locus for use in sequence generations
 
     Args:
@@ -1238,10 +1247,9 @@ def get_genotype(data_folder=None, het_list=[1, 1, 1], haplotype=True, locus=Non
     """
     if data_folder != None:
         path_to_data = data_folder
-
-        v_alleles = create_allele_dict(f"{path_to_data}/imgt_human_IGHV.fasta")
-        d_alleles = create_allele_dict(f"{path_to_data}/imgt_human_IGHD.fasta")
-        j_alleles = create_allele_dict(f"{path_to_data}/imgt_human_IGHJ.fasta")
+        v_alleles = create_allele_dict(f"{path_to_data}/imgt_{species}_IGHV.fasta")
+        d_alleles = create_allele_dict(f"{path_to_data}/imgt_{species}_IGHD.fasta")
+        j_alleles = create_allele_dict(f"{path_to_data}/imgt_{species}_IGHJ.fasta")
 
     else:
         try:
@@ -1483,7 +1491,10 @@ def mutate_by_kmer_random_region(sequence, v_family, junction_length, kmer_mut_i
     v_family = v_family
 
     if mut_rate == None and number_muts == None:
-        mut_dict = mut_per_seq[v_family]
+        if v_family in mut_per_seq:
+            mut_dict = mut_per_seq[v_family]
+        else:
+            mut_dict = random.choice(list(mut_per_seq.values()))
         mut_rate = weighted_choice(mut_dict.items())
         if mut_rate != 0:
             mut_rate = mut_rate * mut_multiplier
@@ -2117,7 +2128,7 @@ def main(args=None):
                         help="Proportion of genes to be heterozygous, specify as  V D J, values must be between 0 and 1. Not compatible with --all_alleles.",
                         nargs=3,
                         type=float,
-                        default=[0.74, 0.16, 0.67])
+                        default=[0, 0, 0])
     parser.add_argument("--shm",
                         action="store_true",  # SHM is false unless "-shm" is specified
                         help="Apply somatic hypermutation.")
@@ -2188,6 +2199,11 @@ def main(args=None):
     parser.add_argument("--seed",
                         type=int,
                         help="Set random seed.")
+    parser.add_argument("--species",
+                        type=str,
+                        action = "store",
+                        default = "human",
+                        help="Specify if simulating non-human sequences. Will be used to find the imgt_{species}_IGH[V|D|J].fasta files in the specified --datadir.")
 
 
     args = parser.parse_args(args)
@@ -2202,7 +2218,7 @@ def main(args=None):
         parser.error("--shm_multiplier cannot be used with --shm_flat.")
     
     if args.prop_non_productive is not None and (args.non_productive == False):
-        parser.error("Can only specificy --prop_non_productive when --non_productive is used.")
+        parser.error("Can only specify --prop_non_productive when --non_productive is used.")
 
 
 
@@ -2241,6 +2257,7 @@ def main(args=None):
         random.seed(args.seed)
     else:
         random.seed(random.random())
+    
 
     # Set up mutation rates
 
@@ -2277,7 +2294,7 @@ def main(args=None):
 
     # Set up the genotype to be used
 
-    locus = get_genotype(path_to_data, args.het, haplotype, args.locus)
+    locus = get_genotype(path_to_data, args.het, haplotype, args.locus,args.species)
 
     # Write out locus file
 
