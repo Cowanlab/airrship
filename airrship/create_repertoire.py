@@ -27,7 +27,9 @@ import re
 import argparse
 import sys
 import importlib.resources
-from importlib.metadata import version
+
+from airrship import __version__
+
 
 
 
@@ -2100,7 +2102,7 @@ def main(args=None):
     parser = argparse.ArgumentParser(allow_abbrev=False)
 
     parser.add_argument('-v', '--version',
-                        action='version', version=version('airrship'))
+                        action='version', version=__version__)
     parser.add_argument("-o",
                         "--outfname",  # specify prefix to name files
                         action="store",
