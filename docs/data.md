@@ -7,7 +7,7 @@ If desired, an alternative data directory can be specified. Files in this direct
 
 A selection of scripts are in included in the scripts folder on Github and can be used to process AIRR TSV files into the required formats for AIRRSHIP input.
 
-Each reference file requires that certain AIRR-C format columns are present - to produce all reference files, the following columns must be included in your input: sequence,sequence_alignment, germline_alignment, fwr1, fwr2, fwr3, cdr1, cdr2, cdr3, v_call, d_call, j_call, np1_length, np2_length, v_sequence_end, d_sequence_start, j_sequence_start. You must also provide paths to IMGT V and D allele FASTA files when calculating trimming metrics. Help for each script can be accessed using create_[]_files.py -h.
+Each reference file requires that certain AIRR-C format columns are present - to produce all reference files, the following columns must be included in your input: sequence,sequence_alignment, germline_alignment, fwr1, fwr2, fwr3, cdr1, cdr2, cdr3, v_call, d_call, j_call, np1_length, np2_length, v_sequence_end, d_sequence_start, j_sequence_start. You must also provide paths to IMGT V and D allele FASTA files when calculating trimming metrics. Help for each script can be accessed using script_name.py -h.
 
 These scripts apply very limited pre-processing to the provided sequences to allow for flexibility and will only drop sequences that contain missing values for required columns. The user may wish to filter to only productive sequences in advance. Some scripts allow the specification of a group column. In these cases this column will be used to group sequences by each unique level of this column and the resulting metrics will be averaged. Otherwise metrics are calculated from the provided file as a whole, treating every sequence equally.
 
@@ -161,7 +161,7 @@ create_np_transitions_files.py [-h] -i INPUT_FILE
 
 Required columns: np1_length,np2_length,sequence,v_sequence_end,d_sequence_start and j_sequence_start
 
-When producing NP transition matrices, only a single file for each region is produced. AIRRSHIP requires two, np[1|2]_transition_probs_per_position_igdm.csv and np[1|2]_transition_probs_per_position_igag.csv to account for differences in inserted nucleotides following SHM. Therefore this script must be run once on unmutated sequences and once on mutated sequences and the files manually renamed. If required, the same file with different names can be used although this may affect insertion accuracy.
+When producing NP transition matrices, only a single file for each NP region is produced. AIRRSHIP requires two, np[1|2]_transition_probs_per_position_igdm.csv and np[1|2]_transition_probs_per_position_igag.csv, to account for differences in inserted nucleotides following SHM. Therefore this script must be run once on unmutated sequences and once on mutated sequences and the files manually renamed. If required, the same file with different names can be used although this may affect insertion accuracy.
 
 
 ## Somatic Hypermutation

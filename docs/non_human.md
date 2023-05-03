@@ -9,7 +9,7 @@ AIRRSHIP is primarily intended for simulation of human sequences and has been te
 
 ## Mouse Reference Datasets
 
-We have tested this premise by simulating sequences from C57Bl/6 mice and reference files are available at the AIRRSHIP [Github](https://github.com/Cowanlab/airrship/c57bl6_reference). These reference files were produced from the datasets detailed below. The number of individuals and sequences is considerably smaller than that used to generate the human references and as a result the simulations are less realistic. The germline alleles included are those that are present in both the IMGT mouse reference files and the OGRDB C57BL/6 reference germline set [1,2].
+We have tested this premise by simulating sequences from C57BL/6 mice and reference files are available at the AIRRSHIP [Github](https://github.com/Cowanlab/airrship/c57bl6_reference). These reference files were produced from the datasets detailed below. The germline alleles included are those that are present in both the IMGT mouse reference files and the OGRDB C57BL/6 reference germline set [1,2]. The number of individuals and sequences is considerably smaller than that used to generate the human references. We have also not fully optimised AIRRSHIP for non-human data, and as a result the simulations are slightly less realistic than for human sequences, especially across the junction region. 
 
 To simulate using these files, the following command would be used after the c57bl6 reference directory had been downloaded:
 
@@ -37,4 +37,5 @@ airrship -o c57bl6_repertoire \
 
 
 [1]	Lees, W. et al. OGRDB: a reference database of inferred immune receptor genes. Nucleic Acids Res. 48, D964–D970 (2020).
+
 [2]	Jackson, K. J. L. et al. A BALB/c IGHV Reference Set, Defined by Haplotype Analysis of Long-Read VDJ-C Sequences From F1 (BALB/c x C57BL/6) Mice. Front. Immunol. 13, 2490 (2022).

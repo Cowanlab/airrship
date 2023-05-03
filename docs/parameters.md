@@ -9,7 +9,7 @@ airrship [-h] [-v] -o OUT_NAME [--outdir OUTDIR] [--datadir DATADIR]
          [--flat_vdj {gene,family,False}] [--no_trim] 
          [--no_trim_v3] [--no_trim_d3] [--no_trim_d5] [--no_trim_j5] 
          [--no_np][--no_np1] [--no_np2] [--non_productive]
-         [--prop_non_productive PROP] [--seed SEED] 
+         [--prop_non_productive PROP] [--seed SEED] [--species SPECIES]
 ```
 
 ## Parameters
@@ -41,4 +41,4 @@ airrship [-h] [-v] -o OUT_NAME [--outdir OUTDIR] [--datadir DATADIR]
 |--non_productive                 |  Include non-productive sequences in the output.<br/>This includes sequences with out of frame V and J segments,<br/> stop codons and/or missing junction anchor residues <br/>(C-104 and W/F-118). The majority of sequences produced will be<br/> non-productive (~75% using defaults without SHM, ~85% with SHM).<br/>  Specify --prop_non_productive to control this proportion.                                                                                                                                                                                                                                            |
 | --prop_non_productive &lt;prop&gt;                   |  Proportion of sequences to be non-productive. <br/> Value between 0 and 1. Use with --non_productive.                                                                                                                                                                                                                                             |
 | --seed &lt;seed&gt;              | Set random seed.                                                                                                                                                                                                                                                                                                                                                                                                         |
-| --species &lt;species&gt;                   |  Specify if simulating non-human sequences. <br/>  Will be used to find the imgt_{species}_IGH[V|D|J].fasta <br/> files in the specified --datadir. Deafult is human.                                                                                                                                                                                                                                            |
+| --species &lt;species&gt;                   |  Specify if simulating non-human sequences. <br/>  Will be used to find the imgt_{species}_IGH[V/D/J].fasta <br/> files in the specified --datadir. Deafult is human.                                                                                                                                                                                                                                            |
