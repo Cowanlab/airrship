@@ -7,7 +7,7 @@ When used at the command line, AIRRSHIP produces four output files per run:
 **outname.fasta**
 
 A FASTA file containing the final simulated sequences. In the case of SHM,
-these will be the mutated sequences. The FASTA headers correspond to the sequence_id column in outname.csv.
+these will be the mutated sequences. The FASTA headers correspond to the sequence_id column in outname.tsv.
 
 ### 2. Sequence information TSV <a name="tsv"></a>
 

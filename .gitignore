@@ -6,3 +6,4 @@ dist/
 test_output/
 old_dist/
 *.json
+site/

@@ -13,7 +13,11 @@ AIRRSHIP replicates the VDJ recombination process from locus creation through to
 
 ## Publications
 
-A preprint giving details of AIRRSHIP is currently available on [bioRxiv](https://www.biorxiv.org/content/10.1101/2022.12.20.521228v1).
+An application note detailing the development and performance of AIRRSHIP is available at [Bioinformatics](https://doi.org/10.1093/bioinformatics/btad365).
+
+If you make use of AIRRSHIP please cite:
+
+Catherine Sutherland and Graeme J M Cowan, AIRRSHIP: simulating human B cell receptor repertoire sequences, Bioinformatics, Volume 39, Issue 6, June 2023, btad365, https://doi.org/10.1093/bioinformatics/btad365
 
 ## Table of Contents
 
