@@ -20,4 +20,4 @@ If you do not wish to install and run AIRRSHIP yourself or want to explore the o
 
 ## Publications
 
-A preprint is currently available at https://doi.org/10.1101/2022.12.20.521228.
+The publication descriving AIRRSHIP is available at [Bioinformatics](https://doi.org/10.1093/bioinformatics/btad365).
